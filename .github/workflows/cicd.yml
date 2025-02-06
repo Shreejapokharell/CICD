@@ -1,0 +1,40 @@
+name: Angular CI/CD
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the repository
+      - uses: actions/checkout@v3
+      
+      # Set up Node.js
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+      
+      # Install dependencies
+      - name: Install Dependencies
+        run: npm install --force
+      
+      # Build the Angular application
+      - name: Build Angular App
+        run: npm run build --prod
+      
+      # Build the Docker image
+      - name: Build Docker Image
+        run: docker build -t cicd .
+      
+      # Optionally deploy locally (for self-hosted runner or testing purposes)
+      - name: Run Docker Container (Locally)
+        run: |
+          docker stop cicd-container || true
+          docker rm cicd-container || true
+          docker run -d -p 80:80 --name cicd-container cicd
